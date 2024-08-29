@@ -56,4 +56,31 @@ class TranslatorTest extends TestCase
 
         $this->app['translator']->handleMissingKeysUsing(null);
     }
+
+    public function testItCanHandleMissingKeysNoReturn()
+    {
+        $this->app['translator']->handleMissingKeysUsing(function ($key) {
+            $_SERVER['__missing_translation_key'] = $key;
+        });
+
+        $key = $this->app['translator']->get('some missing key');
+
+        $this->assertSame('some missing key', $key);
+        $this->assertSame('some missing key', $_SERVER['__missing_translation_key']);
+
+        $this->app['translator']->handleMissingKeysUsing(null);
+    }
+
+    public function testItReturnsCorrectLocaleForMissingKeys()
+    {
+        $this->app['translator']->handleMissingKeysUsing(function ($key, $replacements, $locale) {
+            $_SERVER['__missing_translation_key_locale'] = $locale;
+        });
+
+        $this->app['translator']->get('some missing key', [], 'ht');
+
+        $this->assertSame('ht', $_SERVER['__missing_translation_key_locale']);
+
+        $this->app['translator']->handleMissingKeysUsing(null);
+    }
 }
